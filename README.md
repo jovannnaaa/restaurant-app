@@ -26,35 +26,5 @@ restaurant-app/
 │   └── deploy.sh                 ← applies everything in the right order
 └── .github/workflows/cicd.yml    ← CI/CD pipeline
 ```
-### Notes
 
-* The Secret is created from environment variables and is **not** stored in Git;
-  `02-secrets.yml` is only a template showing its structure.
-* `01-configmaps.yml` embeds the same seed script as `mongo-init/init.js`.
-* The MongoDB password is fixed when the volume is first initialised. To change it later,
-  delete the PVC (`kubectl -n restaurant delete pvc mongo-data-mongo-0`) after scaling down.
-* `ALLOWED_HOSTS` is `*` in `01-configmaps.yml` so the app works behind any IP or
-  domain; restrict it (and add `host:` to the Ingress) when you use a real domain.
 
-## 7. API reference
-
-### Tables `GET/POST /api/tables`
-| Method | Path | Description |
-|--------|------|-------------|
-| GET | `/api/tables?q=&page=0&size=20` | Paginated list |
-| POST | `/api/tables` | Create |
-| GET | `/api/tables/<id>` | Get one |
-| PUT | `/api/tables/<id>` | Update |
-| DELETE | `/api/tables/<id>` | Delete |
-
-### Reservations `GET/POST /api/reservations`
-| Method | Path | Description |
-|--------|------|-------------|
-| GET | `/api/reservations?q=&status=&date=` | Paginated list |
-| POST | `/api/reservations` | Create |
-| GET | `/api/reservations/<id>` | Get one |
-| PUT | `/api/reservations/<id>` | Update |
-| DELETE | `/api/reservations/<id>` | Delete |
-| PATCH | `/api/reservations/<id>/status` | Status only |
-
-Reservation statuses: `pending` → `confirmed` → `completed` / `cancelled`
