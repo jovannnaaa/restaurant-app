@@ -1,15 +1,7 @@
-# Restaurant App — Full Stack
+# Restaurant App 
 
 Angular 18 (frontend) · Django 5 + DRF (backend) · MongoDB (database)  
 Docker · Docker Compose · GitHub Actions CI/CD · Kubernetes
-
-```
-                    ┌────────────────────── Kubernetes namespace "restaurant" ─────────────────────┐
- browser ──HTTP──▶  │  Ingress ──/──▶ frontend-svc ──▶ Deployment frontend (nginx + Angular)        │
-                    │     └──/api──▶ backend-svc ──▶ Deployment backend (Django + gunicorn)        │
-                    │                                    └──▶ mongo-svc ──▶ StatefulSet mongo + PVC │
-                    └───────────────────────────────────────────────────────────────────────────────┘
-```
 
 Three services: **frontend**, **backend**, **database** (MongoDB, seeded with 6 tables and 2 sample reservations).
 
