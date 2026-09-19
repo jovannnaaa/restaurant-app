@@ -1,0 +1,74 @@
+name: restaurant-app
+
+services:
+
+  # MongoDB
+  mongo:
+    image: mongo:7
+    container_name: restaurant-mongo
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_DATABASE: ${MONGO_DB_NAME:-restaurantdb}
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_ROOT_USERNAME:-admin}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD:-change-me-dev}
+    volumes:
+      - mongo_data:/data/db
+      # Seed data (6 tables + 2 reservations) – runs only on first start
+      - ./mongo-init/init.js:/docker-entrypoint-initdb.d/init.js:ro
+    ports:
+      - "127.0.0.1:27017:27017"   # reachable from the host only, never public
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+  # Django backend
+  backend:
+    build: ./backend
+    image: ${DOCKER_USERNAME:-local}/restaurant-backend:${IMAGE_TAG:-latest}
+    container_name: restaurant-backend
+    restart: unless-stopped
+    environment:
+      DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY:-dev-secret-change-me}
+      DEBUG: ${DEBUG:-False}
+      ALLOWED_HOSTS: ${ALLOWED_HOSTS:-localhost,127.0.0.1}
+      MONGO_URI: mongodb://mongo:27017/${MONGO_DB_NAME:-restaurantdb}
+      MONGO_DB_NAME: ${MONGO_DB_NAME:-restaurantdb}
+      MONGO_USERNAME: ${MONGO_ROOT_USERNAME:-admin}
+      MONGO_PASSWORD: ${MONGO_ROOT_PASSWORD:-change-me-dev}
+      MONGO_AUTH_SOURCE: admin
+    ports:
+      - "8080:8080"
+    depends_on:
+      mongo:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "-c",
+             "import urllib.request; urllib.request.urlopen('http://localhost:8080/api/tables')"]
+      interval: 15s
+      timeout: 5s
+      retries: 4
+      start_period: 20s
+
+  # Angular frontend
+  frontend:
+    build: ./frontend
+    image: ${DOCKER_USERNAME:-local}/restaurant-frontend:${IMAGE_TAG:-latest}
+    container_name: restaurant-frontend
+    restart: unless-stopped
+    ports:
+      - "${FRONTEND_PORT:-4200}:80"
+    depends_on:
+      backend:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://127.0.0.1/"]
+      interval: 15s
+      timeout: 5s
+      retries: 4
+      start_period: 5s
+
+volumes:
+  mongo_data:
