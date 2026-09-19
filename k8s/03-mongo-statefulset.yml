@@ -75,7 +75,7 @@ spec:
         - name: mongo-init
           configMap:
             name: mongo-init-script
-            defaultMode: 420            # 0644
+            defaultMode: 420            
   volumeClaimTemplates:
     - metadata:
         name: mongo-data
