@@ -103,8 +103,7 @@ data:
     } else {
       print('Seed: reservations already exist, skipping.');
     }
-
----
+    
 # nginx config for the frontend pod
 apiVersion: v1
 kind: ConfigMap
