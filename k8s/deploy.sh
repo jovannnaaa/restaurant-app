@@ -1,23 +1,3 @@
-#!/usr/bin/env bash
-# =============================================================================
-# k8s/deploy.sh – deploy the whole restaurant app into the "restaurant"
-# namespace of the cluster kubectl currently points to.
-#
-# Used both manually and by the GitHub Actions pipeline (deploy-k8s job).
-#
-#   DOCKER_USERNAME=myuser IMAGE_TAG=latest ./k8s/deploy.sh
-#
-# Environment variables
-#   DOCKER_USERNAME      (required) DockerHub user that owns the images
-#   IMAGE_TAG            image tag, default: latest
-#   DJANGO_SECRET_KEY    optional – generated randomly if the Secret does not exist yet
-#   MONGO_ROOT_PASSWORD  optional – generated randomly if the Secret does not exist yet
-#
-# If the Secret already exists and neither secret variable is given, it is kept
-# as is (re-running the script never changes the database password).
-# NOTE: the MongoDB password is fixed when the volume is first initialised;
-# to change it later delete the PVC (mongo-data-mongo-0) as well.
-# =============================================================================
 set -euo pipefail
 
 : "${DOCKER_USERNAME:?Set DOCKER_USERNAME to the DockerHub user that owns the images}"
