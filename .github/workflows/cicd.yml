@@ -179,7 +179,6 @@ jobs:
           port:        ${{ secrets.SSH_PORT }}
           key:         ${{ secrets.SSH_KEY }}
           script_stop: true
-          # variables listed here are exported on the remote shell
           envs: IMAGE_TAG,DOCKER_USERNAME,DJANGO_SECRET_KEY,MONGO_ROOT_PASSWORD,SERVER_HOST
           script: |
             set -e
