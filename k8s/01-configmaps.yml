@@ -26,7 +26,6 @@ metadata:
 data:
   MONGO_INITDB_DATABASE: "restaurantdb"
 
----
 apiVersion: v1
 kind: ConfigMap
 metadata:
