@@ -13,10 +13,9 @@ services:
       MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD:-change-me-dev}
     volumes:
       - mongo_data:/data/db
-      # Seed data (6 tables + 2 reservations) – runs only on first start
       - ./mongo-init/init.js:/docker-entrypoint-initdb.d/init.js:ro
     ports:
-      - "127.0.0.1:27017:27017"   # reachable from the host only, never public
+      - "127.0.0.1:27017:27017"
     healthcheck:
       test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping')"]
       interval: 10s
