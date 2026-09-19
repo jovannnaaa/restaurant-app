@@ -66,8 +66,6 @@ spec:
         - name: nginx-conf
           configMap:
             name: nginx-config
-
----
 apiVersion: v1
 kind: Service
 metadata:
