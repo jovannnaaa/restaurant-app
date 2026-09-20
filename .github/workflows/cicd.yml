@@ -15,7 +15,6 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-
   ci:
     name: CI – Lint & Check
     runs-on: ubuntu-latest
@@ -66,7 +65,7 @@ jobs:
           print('All imports OK')
           "
 
-      # Angular
+      # Frontend
       - name: Set up Node 20
         uses: actions/setup-node@v4
         with:
@@ -84,7 +83,7 @@ jobs:
           cd frontend
           npx tsc --noEmit -p tsconfig.app.json
 
-      # Orchestration file
+      # Orchestration
       - name: Validate docker-compose.yml
         run: docker compose config --quiet
 
@@ -143,8 +142,8 @@ jobs:
           tags: |
             ${{ secrets.DOCKER_USERNAME }}/restaurant-frontend:latest
             ${{ secrets.DOCKER_USERNAME }}/restaurant-frontend:${{ steps.sha.outputs.sha }}
-            
-    deploy-k8s:
+
+  deploy-k8s:
     name: Deploy – Kubernetes
     runs-on: ubuntu-latest
     needs: build-and-push
