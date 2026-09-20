@@ -6,51 +6,61 @@ metadata:
   labels:
     app.kubernetes.io/name: restaurant-app
     app.kubernetes.io/component: backend
+
 spec:
   replicas: 2
+
   selector:
     matchLabels:
       app: backend
+
   strategy:
     type: RollingUpdate
     rollingUpdate:
       maxSurge: 1
       maxUnavailable: 0
+
   template:
     metadata:
       labels:
         app: backend
         app.kubernetes.io/component: backend
+
     spec:
       terminationGracePeriodSeconds: 30
+
       containers:
         - name: backend
-          image: DOCKER_USERNAME/restaurant-backend:IMAGE_TAG
+          image: jovannnaaa/restaurant-backend:latest
           imagePullPolicy: Always
+
           ports:
             - name: http
               containerPort: 8080
 
           envFrom:
             - configMapRef:
-                name: backend-config
+                name: restaurant-config
 
           env:
             - name: DJANGO_SECRET_KEY
               valueFrom:
                 secretKeyRef:
                   name: restaurant-secrets
-                  key: django-secret-key
+                  key: DJANGO_SECRET_KEY
+
             - name: MONGO_USERNAME
               valueFrom:
                 secretKeyRef:
                   name: restaurant-secrets
-                  key: mongo-root-username
+                  key: MONGO_ROOT_USERNAME
+
             - name: MONGO_PASSWORD
               valueFrom:
                 secretKeyRef:
                   name: restaurant-secrets
-                  key: mongo-root-password
+                  key: MONGO_ROOT_PASSWORD
+
           readinessProbe:
             httpGet:
               path: /api/tables
@@ -62,6 +72,7 @@ spec:
             periodSeconds: 10
             timeoutSeconds: 5
             failureThreshold: 6
+
           livenessProbe:
             httpGet:
               path: /api/tables
@@ -81,6 +92,8 @@ spec:
             limits:
               cpu: "500m"
               memory: "512Mi"
+
+---
 apiVersion: v1
 kind: Service
 metadata:
@@ -89,10 +102,13 @@ metadata:
   labels:
     app.kubernetes.io/name: restaurant-app
     app.kubernetes.io/component: backend
+
 spec:
   type: ClusterIP
+
   selector:
     app: backend
+
   ports:
     - name: http
       port: 8080

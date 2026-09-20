@@ -3,33 +3,34 @@ kind: Deployment
 metadata:
   name: frontend
   namespace: restaurant
-  labels:
-    app.kubernetes.io/name: restaurant-app
-    app.kubernetes.io/component: frontend
 spec:
   replicas: 2
+
   selector:
     matchLabels:
       app: frontend
+
   strategy:
     type: RollingUpdate
     rollingUpdate:
       maxSurge: 1
       maxUnavailable: 0
+
   template:
     metadata:
       labels:
         app: frontend
-        app.kubernetes.io/component: frontend
+
     spec:
       terminationGracePeriodSeconds: 10
+
       containers:
         - name: frontend
-          image: DOCKER_USERNAME/restaurant-frontend:IMAGE_TAG
+          image: jovannnaaa/restaurant-frontend:latest
           imagePullPolicy: Always
+
           ports:
-            - name: http
-              containerPort: 80
+            - containerPort: 80
 
           volumeMounts:
             - name: nginx-conf
@@ -45,6 +46,7 @@ spec:
             periodSeconds: 10
             timeoutSeconds: 3
             failureThreshold: 3
+
           livenessProbe:
             httpGet:
               path: /
@@ -66,18 +68,19 @@ spec:
         - name: nginx-conf
           configMap:
             name: nginx-config
+
+---
 apiVersion: v1
 kind: Service
 metadata:
   name: frontend-svc
   namespace: restaurant
-  labels:
-    app.kubernetes.io/name: restaurant-app
-    app.kubernetes.io/component: frontend
 spec:
   type: ClusterIP
+
   selector:
     app: frontend
+
   ports:
     - name: http
       port: 80
