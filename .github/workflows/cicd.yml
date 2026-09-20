@@ -176,7 +176,7 @@ jobs:
         run: kubectl apply -f k8s/01-configmaps.yml
 
       - name: Create/update Secrets
-        shell: pwsh
+        shell: powershell
         env:
           DJANGO_SECRET_KEY: ${{ secrets.DJANGO_SECRET_KEY }}
           MONGO_ROOT_USERNAME: ${{ secrets.MONGO_ROOT_USERNAME }}
