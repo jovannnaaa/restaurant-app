@@ -176,17 +176,17 @@ jobs:
         run: kubectl apply -f k8s/01-configmaps.yml
 
       - name: Create/update Secrets
+        shell: pwsh
         env:
           DJANGO_SECRET_KEY: ${{ secrets.DJANGO_SECRET_KEY }}
           MONGO_ROOT_USERNAME: ${{ secrets.MONGO_ROOT_USERNAME }}
           MONGO_ROOT_PASSWORD: ${{ secrets.MONGO_ROOT_PASSWORD }}
-        shell: bash
         run: |
-          kubectl create secret generic restaurant-secrets \
-            --namespace restaurant \
-            --from-literal=DJANGO_SECRET_KEY="$DJANGO_SECRET_KEY" \
-            --from-literal=MONGO_ROOT_USERNAME="$MONGO_ROOT_USERNAME" \
-            --from-literal=MONGO_ROOT_PASSWORD="$MONGO_ROOT_PASSWORD" \
+          kubectl create secret generic restaurant-secrets `
+            --namespace restaurant `
+            --from-literal=DJANGO_SECRET_KEY="$env:DJANGO_SECRET_KEY" `
+            --from-literal=MONGO_ROOT_USERNAME="$env:MONGO_ROOT_USERNAME" `
+            --from-literal=MONGO_ROOT_PASSWORD="$env:MONGO_ROOT_PASSWORD" `
             --dry-run=client \
             -o yaml | kubectl apply -f -
 
