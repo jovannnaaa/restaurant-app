@@ -187,7 +187,7 @@ jobs:
             --from-literal=DJANGO_SECRET_KEY="$env:DJANGO_SECRET_KEY" `
             --from-literal=MONGO_ROOT_USERNAME="$env:MONGO_ROOT_USERNAME" `
             --from-literal=MONGO_ROOT_PASSWORD="$env:MONGO_ROOT_PASSWORD" `
-            --dry-run=client \
+            --dry-run=client `
             -o yaml | kubectl apply -f -
 
       - name: Deploy MongoDB
