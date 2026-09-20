@@ -144,36 +144,87 @@ jobs:
             ${{ secrets.DOCKER_USERNAME }}/restaurant-frontend:${{ steps.sha.outputs.sha }}
 
   deploy-k8s:
-    name: Deploy – Kubernetes
-    runs-on: ubuntu-latest
+    name: Deploy – Self-Hosted Kubernetes
+    runs-on: self-hosted
+
     needs: build-and-push
-    if: vars.DEPLOY_K8S == 'true'
+
+    if: github.event_name != 'pull_request'
+
     environment: production
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Install kubectl
-        uses: azure/setup-kubectl@v4
-        with:
-          version: "v1.30.0"
+      - name: Check kubectl
+        run: kubectl version --client
 
-      - name: Write kubeconfig
-        env:
-          KUBECONFIG_B64: ${{ secrets.KUBECONFIG_B64 }}
-        run: |
-          mkdir -p "$HOME/.kube"
-          echo "$KUBECONFIG_B64" | base64 -d > "$HOME/.kube/config"
-          chmod 600 "$HOME/.kube/config"
+      - name: Check Kubernetes context
+        run: kubectl config current-context
 
-      - name: Verify cluster connection
+      - name: Verify Kubernetes cluster
         run: kubectl cluster-info
 
-      - name: Deploy to namespace "restaurant"
+      - name: Check cluster nodes
+        run: kubectl get nodes
+
+      - name: Create namespace
+        run: kubectl apply -f k8s/00-namespace.yml
+
+      - name: Create/update ConfigMaps
+        run: kubectl apply -f k8s/01-configmaps.yml
+
+      - name: Create/update Secrets
         env:
-          DOCKER_USERNAME:     ${{ secrets.DOCKER_USERNAME }}
-          IMAGE_TAG:           ${{ needs.build-and-push.outputs.sha }}
-          DJANGO_SECRET_KEY:   ${{ secrets.DJANGO_SECRET_KEY }}
+          DJANGO_SECRET_KEY: ${{ secrets.DJANGO_SECRET_KEY }}
+          MONGO_ROOT_USERNAME: ${{ secrets.MONGO_ROOT_USERNAME }}
           MONGO_ROOT_PASSWORD: ${{ secrets.MONGO_ROOT_PASSWORD }}
-        run: bash k8s/deploy.sh
+        shell: bash
+        run: |
+          kubectl create secret generic restaurant-secrets \
+            --namespace restaurant \
+            --from-literal=DJANGO_SECRET_KEY="$DJANGO_SECRET_KEY" \
+            --from-literal=MONGO_ROOT_USERNAME="$MONGO_ROOT_USERNAME" \
+            --from-literal=MONGO_ROOT_PASSWORD="$MONGO_ROOT_PASSWORD" \
+            --dry-run=client \
+            -o yaml | kubectl apply -f -
+
+      - name: Deploy MongoDB
+        run: kubectl apply -f k8s/03-mongo-statefulset.yml
+
+      - name: Deploy backend
+        run: kubectl apply -f k8s/04-backend-deployment.yml
+
+      - name: Deploy frontend
+        run: kubectl apply -f k8s/05-frontend-deployment.yml
+
+      - name: Deploy ingress
+        run: kubectl apply -f k8s/06-ingress.yml
+
+      - name: Update backend image
+        run: |
+          kubectl set image deployment/backend `
+            backend=${{ secrets.DOCKER_USERNAME }}/restaurant-backend:${{ needs.build-and-push.outputs.sha }} `
+            -n restaurant
+
+      - name: Update frontend image
+        run: |
+          kubectl set image deployment/frontend `
+            frontend=${{ secrets.DOCKER_USERNAME }}/restaurant-frontend:${{ needs.build-and-push.outputs.sha }} `
+            -n restaurant
+
+      - name: Wait for backend rollout
+        run: kubectl rollout status deployment/backend -n restaurant --timeout=180s
+
+      - name: Wait for frontend rollout
+        run: kubectl rollout status deployment/frontend -n restaurant --timeout=180s
+
+      - name: Show deployed pods
+        run: kubectl get pods -n restaurant
+
+      - name: Show services
+        run: kubectl get svc -n restaurant
+
+      - name: Show ingress
+        run: kubectl get ingress -n restaurant
