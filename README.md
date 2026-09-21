@@ -6,25 +6,10 @@ Docker · Docker Compose · GitHub Actions CI/CD · Kubernetes
 Three services: **frontend**, **backend**, **database** 
 ---
 
-## Project structure
+# Deployment
 
-```
-restaurant-app/
-├── docker-compose.yml            ← frontend + backend + MongoDB
-├── .env.example                  ← optional overrides for compose
-├── mongo-init/init.js            ← seed data (first start only)
-├── backend/                      ← Django + MongoEngine  (Dockerfile)
-├── frontend/                     ← Angular 18 + nginx    (Dockerfile, nginx.conf)
-├── k8s/
-│   ├── 00-namespace.yml          ← Namespace "restaurant"
-│   ├── 01-configmaps.yml         ← backend-config, mongo-config, mongo-init-script, nginx-config
-│   ├── 02-secrets.yml            ← Secret TEMPLATE (real one is created by deploy.sh)
-│   ├── 03-mongo-statefulset.yml  ← StatefulSet + PVC + headless Service
-│   ├── 04-backend-deployment.yml ← Deployment + Service
-│   ├── 05-frontend-deployment.yml← Deployment + Service
-│   ├── 06-ingress.yml            ← Ingress (/ → frontend, /api → backend)
-│   └── deploy.sh                 ← applies everything in the right order
-└── .github/workflows/cicd.yml    ← CI/CD pipeline
-```
+The restaurant_app application is deployed using both Kubernetes and Render
 
+# Live Demo:
+https://restaurant-frontend-y27j.onrender.com/
 
