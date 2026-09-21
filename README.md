@@ -11,5 +11,4 @@ Three services: **frontend**, **backend**, **database**
 The restaurant_app application is deployed using both Kubernetes and Render
 
 # Live Demo:
-https://restaurant-frontend-y27j.onrender.com/
-
+https://restaurant-frontend-y27j.onrender.com/reservations
